@@ -250,7 +250,10 @@ class WebmBase<T> {
     source?: Uint8Array;
     data?: T;
 
-    constructor(private name = "Unknown", private type = "Unknown") {}
+    constructor(
+        private name = "Unknown",
+        private type = "Unknown",
+    ) {}
 
     updateBySource() {}
 
@@ -336,7 +339,7 @@ class WebmFloat extends WebmBase<number> {
 interface ContainerData {
     id: number;
     idHex?: string;
-    data: WebmBase<any>;
+    data: WebmBase<string> | WebmBase<number> | WebmBase<ContainerData[]>;
 }
 
 class WebmContainer extends WebmBase<ContainerData[]> {
@@ -375,7 +378,11 @@ class WebmContainer extends WebmBase<ContainerData[]> {
             const data = this.source!.slice(this.offset, end);
 
             const info = sections[id] || { name: "Unknown", type: "Unknown" };
-            let ctr: any = WebmBase;
+            let ctr:
+                | typeof WebmBase
+                | typeof WebmContainer
+                | typeof WebmUint
+                | typeof WebmFloat = WebmBase;
             switch (info.type) {
                 case "Container":
                     ctr = WebmContainer;

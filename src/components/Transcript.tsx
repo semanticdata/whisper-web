@@ -32,7 +32,7 @@ export default function Transcript({ transcribedData }: Props) {
         let jsonData = JSON.stringify(transcribedData?.chunks ?? [], null, 2);
 
         // post-process the JSON to make it more readable
-        const regex = /(    "timestamp": )\[\s+(\S+)\s+(\S+)\s+\]/gm;
+        const regex = /( {4}"timestamp": )\[\s+(\S+)\s+(\S+)\s+\]/gm;
         jsonData = jsonData.replace(regex, "$1[$2 $3]");
 
         const blob = new Blob([jsonData], { type: "application/json" });

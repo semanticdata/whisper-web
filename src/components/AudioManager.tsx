@@ -151,24 +151,24 @@ export function AudioManager(props: { transcriber: Transcriber }) {
         setAudioDownloadUrl(undefined);
     };
 
-    const setAudioFromDownload = async (
-        data: ArrayBuffer,
-        mimeType: string,
-    ) => {
-        const audioCTX = new AudioContext({
-            sampleRate: Constants.SAMPLING_RATE,
-        });
-        const blobUrl = URL.createObjectURL(
-            new Blob([data], { type: "audio/*" }),
-        );
-        const decoded = await audioCTX.decodeAudioData(data);
-        setAudioData({
-            buffer: decoded,
-            url: blobUrl,
-            source: AudioSource.URL,
-            mimeType: mimeType,
-        });
-    };
+    const setAudioFromDownload = useCallback(
+        async (data: ArrayBuffer, mimeType: string) => {
+            const audioCTX = new AudioContext({
+                sampleRate: Constants.SAMPLING_RATE,
+            });
+            const blobUrl = URL.createObjectURL(
+                new Blob([data], { type: "audio/*" }),
+            );
+            const decoded = await audioCTX.decodeAudioData(data);
+            setAudioData({
+                buffer: decoded,
+                url: blobUrl,
+                source: AudioSource.URL,
+                mimeType: mimeType,
+            });
+        },
+        [],
+    );
 
     const setAudioFromRecording = async (data: Blob) => {
         resetAudio();
@@ -195,36 +195,40 @@ export function AudioManager(props: { transcriber: Transcriber }) {
         fileReader.readAsArrayBuffer(data);
     };
 
-    const downloadAudioFromUrl = async (
-        requestAbortController: AbortController,
-    ) => {
-        if (audioDownloadUrl) {
-            try {
-                setAudioData(undefined);
-                setProgress(0);
-                const { data, headers } = (await axios.get(audioDownloadUrl, {
-                    signal: requestAbortController.signal,
-                    responseType: "arraybuffer",
-                    onDownloadProgress(progressEvent) {
-                        setProgress(progressEvent.progress || 0);
-                    },
-                })) as {
-                    data: ArrayBuffer;
-                    headers: { "content-type": string };
-                };
+    const downloadAudioFromUrl = useCallback(
+        async (requestAbortController: AbortController) => {
+            if (audioDownloadUrl) {
+                try {
+                    setAudioData(undefined);
+                    setProgress(0);
+                    const { data, headers } = (await axios.get(
+                        audioDownloadUrl,
+                        {
+                            signal: requestAbortController.signal,
+                            responseType: "arraybuffer",
+                            onDownloadProgress(progressEvent) {
+                                setProgress(progressEvent.progress || 0);
+                            },
+                        },
+                    )) as {
+                        data: ArrayBuffer;
+                        headers: { "content-type": string };
+                    };
 
-                let mimeType = headers["content-type"];
-                if (!mimeType || mimeType === "audio/wave") {
-                    mimeType = "audio/wav";
+                    let mimeType = headers["content-type"];
+                    if (!mimeType || mimeType === "audio/wave") {
+                        mimeType = "audio/wav";
+                    }
+                    setAudioFromDownload(data, mimeType);
+                } catch (error) {
+                    console.log("Request failed or aborted", error);
+                } finally {
+                    setProgress(undefined);
                 }
-                setAudioFromDownload(data, mimeType);
-            } catch (error) {
-                console.log("Request failed or aborted", error);
-            } finally {
-                setProgress(undefined);
             }
-        }
-    };
+        },
+        [audioDownloadUrl, setAudioFromDownload],
+    );
 
     // When URL changes, download audio
     useEffect(() => {
@@ -235,7 +239,7 @@ export function AudioManager(props: { transcriber: Transcriber }) {
                 requestAbortController.abort();
             };
         }
-    }, [audioDownloadUrl]);
+    }, [audioDownloadUrl, downloadAudioFromUrl]);
 
     return (
         <>
@@ -342,7 +346,7 @@ function SettingsTile(props: {
         setShowModal(false);
     };
 
-    const onSubmit = (url: string) => {
+    const onSubmit = (_url: string) => {
         onClose();
     };
 
@@ -367,16 +371,16 @@ function SettingsModal(props: {
 }) {
     const names = Object.values(LANGUAGES).map(titleCase);
 
-    const models = {
+    const models: Record<string, number[]> = {
         // Original checkpoints
-        'Xenova/whisper-tiny': [41, 152],
-        'Xenova/whisper-base': [77, 291],
-        'Xenova/whisper-small': [249],
-        'Xenova/whisper-medium': [776],
+        "Xenova/whisper-tiny": [41, 152],
+        "Xenova/whisper-base": [77, 291],
+        "Xenova/whisper-small": [249],
+        "Xenova/whisper-medium": [776],
 
         // Distil Whisper (English-only)
-        'distil-whisper/distil-medium.en': [402],
-        'distil-whisper/distil-large-v2': [767],
+        "distil-whisper/distil-medium.en": [402],
+        "distil-whisper/distil-large-v2": [767],
     };
     return (
         <Modal
@@ -396,19 +400,20 @@ function SettingsModal(props: {
                             .filter(
                                 (key) =>
                                     props.transcriber.quantized ||
-                                    // @ts-ignore
                                     models[key].length == 2,
                             )
                             .filter(
-                                (key) => (
-                                    !props.transcriber.multilingual || !key.startsWith('distil-whisper/')
-                                )
+                                (key) =>
+                                    !props.transcriber.multilingual ||
+                                    !key.startsWith("distil-whisper/"),
                             )
                             .map((key) => (
                                 <option key={key} value={key}>{`${key}${
-                                    (props.transcriber.multilingual || key.startsWith('distil-whisper/')) ? "" : ".en"
+                                    props.transcriber.multilingual ||
+                                    key.startsWith("distil-whisper/")
+                                        ? ""
+                                        : ".en"
                                 } (${
-                                    // @ts-ignore
                                     models[key][
                                         props.transcriber.quantized ? 0 : 1
                                     ]
