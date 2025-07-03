@@ -319,7 +319,7 @@ class WebmFloat extends WebmBase<number> {
     updateBySource() {
         const byteArray = this.source!.reverse();
         const floatArrayType = this.getFloatArrayType();
-        const floatArray = new floatArrayType(byteArray.buffer);
+        const floatArray = new floatArrayType(byteArray.buffer as ArrayBuffer);
         this.data! = floatArray[0];
     }
     updateByData() {
@@ -339,7 +339,11 @@ class WebmFloat extends WebmBase<number> {
 interface ContainerData {
     id: number;
     idHex?: string;
-    data: WebmBase<string> | WebmBase<number> | WebmBase<ContainerData[]>;
+    data:
+        | WebmBase<string>
+        | WebmBase<number>
+        | WebmBase<ContainerData[]>
+        | WebmBase<unknown>;
 }
 
 class WebmContainer extends WebmBase<ContainerData[]> {
@@ -512,7 +516,7 @@ class WebmFile extends WebmContainer {
     }
 
     toBlob(type = "video/webm") {
-        return new Blob([this.source!.buffer], { type });
+        return new Blob([this.source!.buffer as ArrayBuffer], { type });
     }
 }
 
