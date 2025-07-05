@@ -60,60 +60,78 @@ export default function Transcript({ transcribedData }: Props) {
         transcribedData?.chunks && transcribedData.chunks.length > 0;
 
     return (
-        <div className='w-full flex flex-col my-2 p-4'>
-            {hasTranscription && (
-                <div
-                    ref={scrollRef}
-                    className='w-full bg-white rounded-lg shadow-xl shadow-black/5 ring-1 ring-slate-700/10 max-h-[20rem] overflow-y-auto'
-                >
-                    <div className='flex'>
-                        {/* Timestamp column */}
-                        <div className='flex-shrink-0 bg-gray-50 border-r border-gray-200 p-2'>
-                            <div className='font-mono text-xs text-gray-500'>
-                                {transcribedData.chunks.map((chunk, i) => (
-                                    <div
-                                        key={i}
-                                        className='leading-6 py-1 px-2 text-right min-w-[4rem]'
-                                    >
-                                        {formatAudioTimestamp(
-                                            chunk.timestamp[0],
+        <div className='p-4'>
+            {hasTranscription ? (
+                <>
+                    <div className='mb-4'>
+                        <h3 className='text-lg font-semibold text-slate-900 mb-2'>
+                            Transcription
+                        </h3>
+                        <div
+                            ref={scrollRef}
+                            className='w-full bg-slate-50 rounded-lg border border-slate-200 max-h-[24rem] overflow-y-auto'
+                        >
+                            <div className='flex'>
+                                {/* Timestamp column */}
+                                <div className='flex-shrink-0 bg-slate-100 border-r border-slate-200 p-2'>
+                                    <div className='font-mono text-xs text-slate-500'>
+                                        {transcribedData.chunks.map(
+                                            (chunk, i) => (
+                                                <div
+                                                    key={i}
+                                                    className='leading-6 py-1 px-2 text-right min-w-[4rem]'
+                                                >
+                                                    {formatAudioTimestamp(
+                                                        chunk.timestamp[0],
+                                                    )}
+                                                </div>
+                                            ),
                                         )}
                                     </div>
-                                ))}
-                            </div>
-                        </div>
+                                </div>
 
-                        {/* Transcription text column */}
-                        <div className='flex-1 p-2'>
-                            <div className='font-mono text-sm text-gray-800 whitespace-pre-wrap'>
-                                {transcribedData.chunks.map((chunk, i) => (
-                                    <div
-                                        key={i}
-                                        className='leading-6 py-1 px-2'
-                                    >
-                                        {chunk.text}
+                                {/* Transcription text column */}
+                                <div className='flex-1 p-2'>
+                                    <div className='font-mono text-sm text-slate-800 whitespace-pre-wrap'>
+                                        {transcribedData.chunks.map(
+                                            (chunk, i) => (
+                                                <div
+                                                    key={i}
+                                                    className='leading-6 py-1 px-2'
+                                                >
+                                                    {chunk.text}
+                                                </div>
+                                            ),
+                                        )}
                                     </div>
-                                ))}
+                                </div>
                             </div>
                         </div>
                     </div>
-                </div>
-            )}
 
-            {transcribedData && !transcribedData.isBusy && hasTranscription && (
-                <div className='w-full text-right mt-2'>
-                    <button
-                        onClick={exportTXT}
-                        className='text-white bg-green-500 hover:bg-green-600 focus:ring-4 focus:ring-green-300 font-medium rounded-lg text-sm px-4 py-2 text-center mr-2 dark:bg-green-600 dark:hover:bg-green-700 dark:focus:ring-green-800 inline-flex items-center'
-                    >
-                        Export TXT
-                    </button>
-                    <button
-                        onClick={exportJSON}
-                        className='text-white bg-green-500 hover:bg-green-600 focus:ring-4 focus:ring-green-300 font-medium rounded-lg text-sm px-4 py-2 text-center mr-2 dark:bg-green-600 dark:hover:bg-green-700 dark:focus:ring-green-800 inline-flex items-center'
-                    >
-                        Export JSON
-                    </button>
+                    {transcribedData && !transcribedData.isBusy && (
+                        <div className='flex justify-end space-x-2'>
+                            <button
+                                onClick={exportTXT}
+                                className='bg-green-600 hover:bg-green-700 text-white font-medium rounded-lg text-sm px-4 py-2 transition-colors'
+                            >
+                                Export TXT
+                            </button>
+                            <button
+                                onClick={exportJSON}
+                                className='bg-green-600 hover:bg-green-700 text-white font-medium rounded-lg text-sm px-4 py-2 transition-colors'
+                            >
+                                Export JSON
+                            </button>
+                        </div>
+                    )}
+                </>
+            ) : (
+                <div className='text-center py-8 text-slate-500'>
+                    <p>No transcription available.</p>
+                    <p className='text-sm mt-1'>
+                        Upload an audio file or record to get started.
+                    </p>
                 </div>
             )}
         </div>

@@ -7,12 +7,15 @@ export function UrlInput(
     >,
 ) {
     return (
-        <div>
+        <div className='mt-4'>
+            <label className='block text-sm font-medium text-slate-700 mb-2'>
+                Audio URL
+            </label>
             <input
                 {...props}
                 type='url'
-                className='my-2 bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500'
-                placeholder='www.example.com'
+                className='w-full px-3 py-2 border border-slate-300 rounded-lg shadow-sm placeholder-slate-400 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 text-sm'
+                placeholder='https://example.com/audio.mp3'
                 required
             />
         </div>

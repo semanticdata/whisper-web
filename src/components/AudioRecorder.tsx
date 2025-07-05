@@ -119,28 +119,48 @@ export default function AudioRecorder(props: {
     };
 
     return (
-        <div className='flex flex-col justify-center items-center'>
-            <button
-                type='button'
-                className={`m-2 inline-flex justify-center rounded-md border border-transparent px-4 py-2 text-sm font-medium text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2 transition-all duration-200 ${
-                    recording
-                        ? "bg-red-500 hover:bg-red-600"
-                        : "bg-green-500 hover:bg-green-600"
-                }`}
-                onClick={handleToggleRecording}
-            >
-                {recording
-                    ? `Stop Recording (${formatAudioTimestamp(duration)})`
-                    : "Start Recording"}
-            </button>
+        <div className='space-y-4'>
+            <div className='text-center'>
+                <button
+                    type='button'
+                    className={`inline-flex items-center justify-center px-6 py-3 rounded-lg font-medium text-sm focus:outline-none focus:ring-2 focus:ring-offset-2 transition-all duration-200 min-w-[160px] ${
+                        recording
+                            ? "bg-red-600 hover:bg-red-700 text-white focus:ring-red-500"
+                            : "bg-green-600 hover:bg-green-700 text-white focus:ring-green-500"
+                    }`}
+                    onClick={handleToggleRecording}
+                >
+                    <div className='flex items-center'>
+                        <div
+                            className={`w-3 h-3 rounded-full mr-2 ${
+                                recording
+                                    ? "bg-white animate-pulse"
+                                    : "bg-white"
+                            }`}
+                        />
+                        {recording
+                            ? `Stop Recording (${formatAudioTimestamp(duration)})`
+                            : "Start Recording"}
+                    </div>
+                </button>
+            </div>
 
             {recordedBlob && (
-                <audio className='w-full' ref={audioRef} controls>
-                    <source
-                        src={URL.createObjectURL(recordedBlob)}
-                        type={recordedBlob.type}
-                    />
-                </audio>
+                <div className='bg-slate-50 rounded-lg border border-slate-200 p-4'>
+                    <h5 className='text-sm font-medium text-slate-700 mb-2'>
+                        Recorded Audio
+                    </h5>
+                    <audio
+                        className='w-full h-12 rounded-lg'
+                        ref={audioRef}
+                        controls
+                    >
+                        <source
+                            src={URL.createObjectURL(recordedBlob)}
+                            type={recordedBlob.type}
+                        />
+                    </audio>
+                </div>
             )}
         </div>
     );

@@ -243,33 +243,34 @@ export function AudioManager(props: { transcriber: Transcriber }) {
 
     return (
         <>
-            <div className='flex flex-col justify-center items-center rounded-lg bg-white shadow-xl shadow-black/5 ring-1 ring-slate-700/10'>
-                <div className='flex flex-row space-x-2 py-2 w-full px-2'>
-                    <UrlTile
-                        icon={<AnchorIcon />}
-                        text={"From URL"}
-                        onUrlUpdate={(e) => {
-                            props.transcriber.onInputChange();
-                            setAudioDownloadUrl(e);
-                        }}
-                    />
-                    <VerticalBar />
-                    <FileTile
-                        icon={<FolderIcon />}
-                        text={"From file"}
-                        onFileUpdate={(decoded, blobUrl, mimeType) => {
-                            props.transcriber.onInputChange();
-                            setAudioData({
-                                buffer: decoded,
-                                url: blobUrl,
-                                source: AudioSource.FILE,
-                                mimeType: mimeType,
-                            });
-                        }}
-                    />
-                    {navigator.mediaDevices && (
-                        <>
-                            <VerticalBar />
+            <div className='bg-white rounded-lg border border-slate-200 shadow-sm'>
+                <div className='p-4'>
+                    <h3 className='text-lg font-semibold text-slate-900 mb-4'>
+                        Audio Input
+                    </h3>
+                    <div className='flex flex-row space-x-3'>
+                        <UrlTile
+                            icon={<AnchorIcon />}
+                            text={"From URL"}
+                            onUrlUpdate={(e) => {
+                                props.transcriber.onInputChange();
+                                setAudioDownloadUrl(e);
+                            }}
+                        />
+                        <FileTile
+                            icon={<FolderIcon />}
+                            text={"From file"}
+                            onFileUpdate={(decoded, blobUrl, mimeType) => {
+                                props.transcriber.onInputChange();
+                                setAudioData({
+                                    buffer: decoded,
+                                    url: blobUrl,
+                                    source: AudioSource.FILE,
+                                    mimeType: mimeType,
+                                });
+                            }}
+                        />
+                        {navigator.mediaDevices && (
                             <RecordTile
                                 icon={<MicrophoneIcon />}
                                 text={"Record"}
@@ -278,43 +279,49 @@ export function AudioManager(props: { transcriber: Transcriber }) {
                                     setAudioFromRecording(e);
                                 }}
                             />
-                        </>
+                        )}
+                    </div>
+                    {audioData && (
+                        <div className='mt-4 pt-4 border-t border-slate-200'>
+                            <AudioDataBar
+                                progress={
+                                    isAudioLoading ? progress : +!!audioData
+                                }
+                            />
+                        </div>
                     )}
                 </div>
-                {
-                    <AudioDataBar
-                        progress={isAudioLoading ? progress : +!!audioData}
-                    />
-                }
             </div>
             {audioData && (
                 <>
-                    <AudioPlayer
-                        audioUrl={audioData.url}
-                        mimeType={audioData.mimeType}
-                    />
+                    <div className='mt-4'>
+                        <AudioPlayer
+                            audioUrl={audioData.url}
+                            mimeType={audioData.mimeType}
+                        />
+                    </div>
 
-                    <div className='relative w-full flex justify-center items-center'>
+                    <div className='mt-4 flex justify-center items-center relative'>
                         <TranscribeButton
                             onClick={() => {
                                 props.transcriber.start(audioData.buffer);
                             }}
                             isModelLoading={props.transcriber.isModelLoading}
-                            // isAudioLoading ||
                             isTranscribing={props.transcriber.isBusy}
                         />
 
                         <SettingsTile
-                            className='absolute right-4'
+                            className='absolute right-0'
                             transcriber={props.transcriber}
                             icon={<SettingsIcon />}
                         />
                     </div>
+
                     {props.transcriber.progressItems.length > 0 && (
-                        <div className='relative z-10 p-4 w-full'>
-                            <label>
+                        <div className='mt-4 space-y-2'>
+                            <p className='text-sm font-medium text-slate-700'>
                                 Loading model files... (only run once)
-                            </label>
+                            </p>
                             {props.transcriber.progressItems.map((data) => (
                                 <div key={data.file}>
                                     <Progress
@@ -388,40 +395,45 @@ function SettingsModal(props: {
             title={"Settings"}
             content={
                 <>
-                    <label>Select the model to use.</label>
-                    <select
-                        className='mt-1 mb-1 bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500'
-                        defaultValue={props.transcriber.model}
-                        onChange={(e) => {
-                            props.transcriber.setModel(e.target.value);
-                        }}
-                    >
-                        {Object.keys(models)
-                            .filter(
-                                (key) =>
-                                    props.transcriber.quantized ||
-                                    models[key].length == 2,
-                            )
-                            .filter(
-                                (key) =>
-                                    !props.transcriber.multilingual ||
-                                    !key.startsWith("distil-whisper/"),
-                            )
-                            .map((key) => (
-                                <option key={key} value={key}>{`${key}${
-                                    props.transcriber.multilingual ||
-                                    key.startsWith("distil-whisper/")
-                                        ? ""
-                                        : ".en"
-                                } (${
-                                    models[key][
-                                        props.transcriber.quantized ? 0 : 1
-                                    ]
-                                }MB)`}</option>
-                            ))}
-                    </select>
-                    <div className='flex justify-between items-center mb-3 px-1'>
-                        <div className='flex'>
+                    <div className='mb-4'>
+                        <label className='block text-sm font-medium text-slate-700 mb-2'>
+                            Select the model to use
+                        </label>
+                        <select
+                            className='w-full px-3 py-2 border border-slate-300 rounded-lg shadow-sm focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 text-sm'
+                            defaultValue={props.transcriber.model}
+                            onChange={(e) => {
+                                props.transcriber.setModel(e.target.value);
+                            }}
+                        >
+                            {Object.keys(models)
+                                .filter(
+                                    (key) =>
+                                        props.transcriber.quantized ||
+                                        models[key].length == 2,
+                                )
+                                .filter(
+                                    (key) =>
+                                        !props.transcriber.multilingual ||
+                                        !key.startsWith("distil-whisper/"),
+                                )
+                                .map((key) => (
+                                    <option key={key} value={key}>{`${key}${
+                                        props.transcriber.multilingual ||
+                                        key.startsWith("distil-whisper/")
+                                            ? ""
+                                            : ".en"
+                                    } (${
+                                        models[key][
+                                            props.transcriber.quantized ? 0 : 1
+                                        ]
+                                    }MB)`}</option>
+                                ))}
+                        </select>
+                    </div>
+
+                    <div className='grid grid-cols-2 gap-4 mb-4'>
+                        <div className='flex items-center'>
                             <input
                                 id='multilingual'
                                 type='checkbox'
@@ -431,12 +443,16 @@ function SettingsModal(props: {
                                         e.target.checked,
                                     );
                                 }}
-                            ></input>
-                            <label htmlFor={"multilingual"} className='ms-1'>
+                                className='h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-slate-300 rounded'
+                            />
+                            <label
+                                htmlFor='multilingual'
+                                className='ml-2 text-sm font-medium text-slate-700'
+                            >
                                 Multilingual
                             </label>
                         </div>
-                        <div className='flex'>
+                        <div className='flex items-center'>
                             <input
                                 id='quantize'
                                 type='checkbox'
@@ -446,45 +462,59 @@ function SettingsModal(props: {
                                         e.target.checked,
                                     );
                                 }}
-                            ></input>
-                            <label htmlFor={"quantize"} className='ms-1'>
+                                className='h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-slate-300 rounded'
+                            />
+                            <label
+                                htmlFor='quantize'
+                                className='ml-2 text-sm font-medium text-slate-700'
+                            >
                                 Quantized
                             </label>
                         </div>
                     </div>
                     {props.transcriber.multilingual && (
                         <>
-                            <label>Select the source language.</label>
-                            <select
-                                className='mt-1 mb-3 bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500'
-                                defaultValue={props.transcriber.language}
-                                onChange={(e) => {
-                                    props.transcriber.setLanguage(
-                                        e.target.value,
-                                    );
-                                }}
-                            >
-                                {Object.keys(LANGUAGES).map((key, i) => (
-                                    <option key={key} value={key}>
-                                        {names[i]}
+                            <div className='mb-4'>
+                                <label className='block text-sm font-medium text-slate-700 mb-2'>
+                                    Select the source language
+                                </label>
+                                <select
+                                    className='w-full px-3 py-2 border border-slate-300 rounded-lg shadow-sm focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 text-sm'
+                                    defaultValue={props.transcriber.language}
+                                    onChange={(e) => {
+                                        props.transcriber.setLanguage(
+                                            e.target.value,
+                                        );
+                                    }}
+                                >
+                                    {Object.keys(LANGUAGES).map((key, i) => (
+                                        <option key={key} value={key}>
+                                            {names[i]}
+                                        </option>
+                                    ))}
+                                </select>
+                            </div>
+                            <div className='mb-4'>
+                                <label className='block text-sm font-medium text-slate-700 mb-2'>
+                                    Select the task to perform
+                                </label>
+                                <select
+                                    className='w-full px-3 py-2 border border-slate-300 rounded-lg shadow-sm focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 text-sm'
+                                    defaultValue={props.transcriber.subtask}
+                                    onChange={(e) => {
+                                        props.transcriber.setSubtask(
+                                            e.target.value,
+                                        );
+                                    }}
+                                >
+                                    <option value={"transcribe"}>
+                                        Transcribe
                                     </option>
-                                ))}
-                            </select>
-                            <label>Select the task to perform.</label>
-                            <select
-                                className='mt-1 mb-3 bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500'
-                                defaultValue={props.transcriber.subtask}
-                                onChange={(e) => {
-                                    props.transcriber.setSubtask(
-                                        e.target.value,
-                                    );
-                                }}
-                            >
-                                <option value={"transcribe"}>Transcribe</option>
-                                <option value={"translate"}>
-                                    Translate (to English)
-                                </option>
-                            </select>
+                                    <option value={"translate"}>
+                                        Translate (to English)
+                                    </option>
+                                </select>
+                            </div>
                         </>
                     )}
                 </>
@@ -495,19 +525,15 @@ function SettingsModal(props: {
     );
 }
 
-function VerticalBar() {
-    return <div className='w-[1px] bg-slate-200'></div>;
-}
-
 function AudioDataBar(props: { progress: number }) {
     return <ProgressBar progress={`${Math.round(props.progress * 100)}%`} />;
 }
 
 function ProgressBar(props: { progress: string }) {
     return (
-        <div className='w-full bg-gray-200 rounded-full h-1 dark:bg-gray-700'>
+        <div className='w-full bg-slate-200 rounded-full h-2'>
             <div
-                className='bg-blue-600 h-1 rounded-full transition-all duration-100'
+                className='bg-indigo-600 h-2 rounded-full transition-all duration-300'
                 style={{ width: props.progress }}
             ></div>
         </div>
@@ -708,11 +734,11 @@ function Tile(props: {
     return (
         <button
             onClick={props.onClick}
-            className='flex items-center justify-center rounded-lg p-2 bg-blue text-slate-500 hover:text-indigo-600 hover:bg-indigo-50 transition-all duration-200'
+            className='flex flex-col items-center justify-center p-4 bg-slate-50 border border-slate-200 rounded-lg text-slate-600 hover:text-indigo-600 hover:bg-indigo-50 hover:border-indigo-200 transition-all duration-200 min-w-[120px]'
         >
-            <div className='w-7 h-7'>{props.icon}</div>
+            <div className='w-6 h-6 mb-2'>{props.icon}</div>
             {props.text && (
-                <div className='ml-2 break-text text-center text-md w-30'>
+                <div className='text-sm font-medium text-center'>
                     {props.text}
                 </div>
             )}

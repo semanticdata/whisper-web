@@ -16,11 +16,14 @@ export default function AudioPlayer(props: {
     }, [props.audioUrl]);
 
     return (
-        <div className='flex relative z-10 p-4 w-full'>
+        <div className='bg-white rounded-lg border border-slate-200 shadow-sm p-4'>
+            <h4 className='text-sm font-medium text-slate-700 mb-3'>
+                Audio Preview
+            </h4>
             <audio
                 ref={audioPlayer}
                 controls
-                className='w-full h-14 rounded-lg bg-white shadow-xl shadow-black/5 ring-1 ring-slate-700/10'
+                className='w-full h-12 rounded-lg'
             >
                 <source ref={audioSource} type={props.mimeType}></source>
             </audio>
